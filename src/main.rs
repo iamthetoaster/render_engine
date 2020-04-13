@@ -54,20 +54,23 @@ fn main() {
     let program = Program::from_source(
         &display, vertex_shader_src, fragment_shader_src, None
     ).unwrap();
+
+    let uniforms = uniforms::EmptyUniforms;
+    let params = glium::DrawParameters {
+        depth: glium::Depth {
+            test: glium::draw_parameters::DepthTest::IfLess,
+            write: true,
+            .. Default::default()
+        },
+        .. Default::default()
+    };
+        
     let mut closed = false;
     while !closed {
 
         // Actual rendering related part below
         {
-            let uniforms = uniforms::EmptyUniforms;
-            let params = glium::DrawParameters {
-                depth: glium::Depth {
-                    test: glium::draw_parameters::DepthTest::IfLess,
-                    write: true,
-                    .. Default::default()
-                },
-                .. Default::default()
-            };
+            
 
 
             let mut target = display.draw();
@@ -78,12 +81,21 @@ fn main() {
             ).unwrap();
             target.finish().unwrap();
         }
-        
+
         // event handling 
         events_loop.poll_events(|ev| {
             match ev {
                 glutin::Event::WindowEvent { event, .. } => match event {
                     glutin::WindowEvent::CloseRequested => closed = true,
+                    _ => (),
+                },
+                glutin::Event::DeviceEvent{event, ..} => match event {
+                    glutin::DeviceEvent::Key(k) => {
+                        println!("Key {:?} {:?}", 
+                            k.virtual_keycode.unwrap(),
+                            k.state
+                    )
+                    },
                     _ => (),
                 },
                 _ => (),
